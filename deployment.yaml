@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-app-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: node-app
+  template:
+    metadata:
+      labels:
+        app: node-app
+    spec:
+      containers:
+      - name: node-server
+        # source is in github.com/mebble/docker-images
+        image: mebble/node-server-simple:v0.2.0
+        ports:
+        # containerPort is just documentation
+        # FROM THE DOCS
+        # Not specifying a port here DOES NOT prevent that port from being exposed. Any port which is listening on the default "0.0.0.0" address inside a container will be accessible from the network
+        # Note that we don't specify port 5000, but it's still exposed
+        - containerPort: 8000
+        env:
+        # will override the PORT env var that's been set in the image already through its Dockerfile
+        - name: PORT
+          value: "5000"
