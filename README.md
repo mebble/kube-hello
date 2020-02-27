@@ -31,11 +31,50 @@ Find all ingress controller pods
 $ kubectl get pods --all-namespaces | grep -i ingress
 ```
 
+### Make Requests
+
 In this project, both the `node-app-service` service and `node-app-ingress` gateway are hosted on the lone host in the minikube cluster. Hence, they both have the same IP address. Running `$ kubectl get ingresses` and `$ kubectl get services` shows us their respective port on this lone host under the `PORTS` column. The `PORTS` column of the service includes a port mapping from a `NodePort` to a service `Port`.
 
-To hit a service directly, make a request to the service `NodePort`. That will do port mapping to the service `Port`, then loadbalancing to one of the matched pods (according to the selector), and port forwarding to the pod's port, specified by the service's `targetPort`.
+To hit a service directly, make a request to the service `NodePort`, assigned by k8s. That will do port mapping to the service `Port`, then loadbalancing to one of the matched pods (according to the selector), and port forwarding to the pod's port, specified by the service's `targetPort`.
 
-To hit a service through the Ingress gateway, make a request to the port the Ingress is running on. Ingress forwards the request to the appropriate port on the appropriate service using the spec rules. There's a one-one mapping between the request URL path and the (serviceName, servicePort) pair, specified by `serviceName` and `servicePort` in the spec rules. Then the loadbalancing and so on proceeds. Note that along with this mapping, the URL path itself is rewritten/modified according to the ingress annotation, and it is that modified path that gets sent to the target service, and ultimately the target pod. The ingress object/resource itself doesn't apply any semantics to the annotations. It's the ingress controller that receives and enforces these annotations.
+```sh
+$ curl <minikube-host>:<service-nodeport>/
+$ curl <minikube-host>:<service-nodeport>/pingpong/hii
+```
+
+To hit a service through the Ingress gateway, make a request to the port the Ingress is running on, assigned by k8s. Ingress forwards the request to the appropriate port on the appropriate service using the spec rules. There's a one-one mapping between the request URL path and the (serviceName, servicePort) pair, specified by `serviceName` and `servicePort` in the spec rules. Then the loadbalancing and so on proceeds.
+
+Note that in this request forwarding, the URL path of that request is passed on to the target service, and ultimately to the target pod. This URL path could also be rewritten/modified before the request forwarding, according to the ingress annotation, and that modified path would be the one passed on. The ingress object/resource itself doesn't apply any semantics to the annotations. It's the ingress controller that receives and enforces these annotations.
+
+```sh
+$ curl <minikube-host>:<ingress-port>/node-app
+$ curl <minikube-host>:<ingress-port>/node-app/pingpong/hii
+```
+
+### Bad Requests
+
+Here are some ways we might make a bad request:
+
+```sh
+$ curl <minikube-host>:<ingress-port>/
+// returns 404 Not Found
+```
+
+Here, the gateway didn't find any service to handle a request to that path.
+
+```sh
+$ curl <minikube-host>:<ingress-port>/node-app-faulty
+// returns 502 Bad Gateway
+```
+
+Here, the gateway found a service to forward the request to, but that service didn't have any server running at the service's pod's target port.
+
+```sh
+$ curl <minikube-host>:<ingress-port>/node-app/foo
+// returns 404 Not Found
+```
+
+Here, the gateway found a service to forward the request to, and a server was running at the service's pod's target port, but that server didn't find any handler for a request to that path.
 
 ### Through Services, To Pods
 
