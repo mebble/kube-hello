@@ -51,6 +51,10 @@ $ curl <minikube-host>:<ingress-port>/node-app
 $ curl <minikube-host>:<ingress-port>/node-app/pingpong/hii
 ```
 
+#### Update: Proxy Sidecar
+
+In each pod, a proxy "sidecar" container was created, that simply routes requests to the main container of the pod. The Ingress gateway was made to forward requests to this proxy sidecar instead of the main container.
+
 ### Bad Requests
 
 Here are some ways we might make a bad request:

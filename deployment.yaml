@@ -26,3 +26,12 @@ spec:
         # will override the PORT env var that's been set in the image already through its Dockerfile
         - name: PORT
           value: "5000"
+      - name: node-proxy
+        image: mebble/node-proxy-simple:v0.1.0
+        ports:
+        - containerPort: 3000
+        env:
+        - name: PORT
+          value: "3000"
+        - name: TARGET_PORT
+          value: "5000"

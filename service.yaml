@@ -15,5 +15,8 @@ spec:
   - name: port2
     port: 81
     targetPort: 5000
+  - name: proxy-port
+    port: 82
+    targetPort: 3000
   selector:
     app: node-app

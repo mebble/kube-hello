@@ -11,7 +11,7 @@ spec:
       - path: /node-app(/|$)(.*)
         backend:
           serviceName: node-app-service
-          servicePort: 81
+          servicePort: 82
       - path: /node-app-faulty(/|$)(.*)
         backend:
           serviceName: node-app-service
